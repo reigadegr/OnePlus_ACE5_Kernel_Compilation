@@ -1,6 +1,6 @@
 # OnePlus ACE5 内核编译项目 🚀
 
-[![编译状态](https://github.com/用户名/OnePlus_ACE5_Kernel_Compilation/actions/workflows/Build-SukiSU.yml/badge.svg)](https://github.com/用户名/OnePlus_ACE5_Kernel_Compilation/actions/workflows/Build-SukiSU.yml)
+[![编译状态](https://github.com/Sorynthia/OnePlus_ACE5_Kernel_Compilation/actions/workflows/Build-SukiSU.yml/badge.svg)](https://github.com/Sorynthia/OnePlus_ACE5_Kernel_Compilation/actions/workflows/Build-SukiSU.yml)
 
 这是一个针对一加ACE5手机的自动化内核编译项目，使用GitHub Actions每日构建集成SukiSU-Ultra的内核。
 
