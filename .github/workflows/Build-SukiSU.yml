@@ -1,4 +1,4 @@
-name:OnePlus_ACE5_Kernel_Compilation
+name: OnePlus_ACE5_Kernel_Compilation
 on:
   workflow_dispatch:
     inputs:
