@@ -3,10 +3,10 @@ name: OnePlus_ACE5_Kernel_Compilation
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 23 * * *'  # UTC时间23点（北京时间次日7点）
+    - cron: '0 16 * * *'
 
 env:
-  RETENTION_COUNT: 7  # 保留的发布版本数量
+  RETENTION_COUNT: 3  # 从7减少到3
   CPU: 'sm8650'
   FEIL: 'oneplus_ace5'
   CPUD: 'pineapple'
@@ -38,11 +38,9 @@ jobs:
 
       - name: 配置环境
         run: |
-          # 配置 Git
           git config --global user.name "Sorynthia"
           git config --global user.email "2984886500@qq.com"
           
-          # 创建工作目录
           mkdir -p ${{ env.WORKSPACE_DIR }}
 
       - name: 设置依赖缓存
@@ -68,14 +66,12 @@ jobs:
       - name: 初始化版本库并同步
         working-directory: ${{ env.WORKSPACE_DIR }}
         run: |
-          # 初始化和同步
+
           repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b oneplus/${{ env.CPU }} -m ${{ env.FEIL }}.xml --depth=1
           repo sync
           
-          # 清理文件和修复版本字符串
           find kernel_platform -name "abi_gki_protected_exports_*" -delete || echo "No protected exports found!"
           
-          # 修复版本字符串
           for script_path in kernel_platform/common/scripts/setlocalversion kernel_platform/msm-kernel/scripts/setlocalversion kernel_platform/external/dtc/scripts/setlocalversion; do
             if [ -f "$script_path" ]; then
               sed -i 's/ -dirty//g' "$script_path"
@@ -95,28 +91,25 @@ jobs:
         id: ksu_version
         working-directory: ${{ env.WORKSPACE_DIR }}/kernel_platform
         run: |
-          # 下载并运行 SukiSU-Ultra 安装脚本
+
           curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash ${{ env.BRANCH }}
           
-          # 计算并导出 KSU 版本号
           cd ./KernelSU
           KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10606)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
           
-          # 更新 Makefile 中的版本号
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
 
       - name: 准备和应用补丁
         working-directory: ${{ env.WORKSPACE_DIR }}
         run: |
-          # 克隆必要的补丁仓库
+          
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
           
           cd kernel_platform
           
-          # 应用 SUSFS 补丁
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
           cp -r ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp -r ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
@@ -124,11 +117,9 @@ jobs:
           cd ./common
           patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
           
-          # 应用 Hide Stuff 补丁
           cp ../../SukiSU_patch/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
           
-          # 应用新的钩子补丁
           cp ../../SukiSU_patch/hooks/new_hooks.patch ./
           patch -p1 -F 3 < new_hooks.patch
 
@@ -154,17 +145,6 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
-
-          if [ "${{ env.KERNEL_VERSION }}" = "6.6" ]; then
-            echo "CONFIG_ZSMALLOC=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_ZRAM_WRITEBACK=y" >> ./common/arch/arm64/configs/gki_defconfig
-            sed -i 's/CONFIG_ZRAM=m/CONFIG_ZRAM=y/g' ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_ZRAM_WRITEBACK=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_CRYPTO_LZ4K=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_CRYPTO_LZ4KD=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_CRYPTO_LZ4HC=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_CRYPTO_842=y" >> ./common/arch/arm64/configs/gki_defconfig
-          fi
 
           sed -i 's/check_defconfig//' ./common/build.config.gki
 
