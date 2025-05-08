@@ -38,8 +38,8 @@ jobs:
 
       - name: 配置环境
         run: |
-          git config --global user.name "Sorynthia"
-          git config --global user.email "2984886500@qq.com"
+          git config --global user.name "Winkmoon"
+          git config --global user.email "3432632982@qq.com"
           
           mkdir -p ${{ env.WORKSPACE_DIR }}
 
