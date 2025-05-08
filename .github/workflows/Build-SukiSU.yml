@@ -12,7 +12,7 @@ env:
   CPUD: 'pineapple'
   ANDROID_VERSION: 'android14'
   KERNEL_VERSION: '6.1'
-  KERNEL_NAME: '-Ace5-SukiSU-CoolApk@Xinran_official'
+  KERNEL_NAME: '-Sorynthia'
   KERNELSU_VARIANT: 'SukiSU-Ultra'
   KERNELSU_VERSION: 'main'
   SUSFS_ENABLED: '启用'
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       ksuver: ${{ steps.ksu_version.outputs.ksuver }}
-
+    steps:
       - name: 最大化构建空间
         uses: easimon/maximize-build-space@master
         with:
