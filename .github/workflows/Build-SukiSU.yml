@@ -6,18 +6,18 @@ on:
     - cron: '0 16 * * *'
 
 env:
-  RETENTION_COUNT: 3  # 从7减少到3
-  CPU: 'sm8650'
-  FEIL: 'oneplus_ace5'
-  CPUD: 'pineapple'
-  ANDROID_VERSION: 'android14'
-  KERNEL_VERSION: '6.1'
-  KERNEL_NAME: '-Sorynthia'
-  KERNELSU_VARIANT: 'SukiSU-Ultra'
-  KERNELSU_VERSION: 'main'
-  SUSFS_ENABLED: '启用'
-  VFS_PATCH_ENABLED: '启用'
-  WORKSPACE_DIR: 'kernel_workspace'
+  RETENTION_COUNT: 3
+  CPU: sm8650
+  FEIL: oneplus_ace5
+  CPUD: pineapple
+  ANDROID_VERSION: android14
+  KERNEL_VERSION: 6.1
+  KERNEL_NAME: "-Ace5-SukiSU-CoolApk@Xinran_official"
+  KERNELSU_VARIANT: SukiSU-Ultra
+  KERNELSU_VERSION: main
+  SUSFS_ENABLED: true
+  VFS_PATCH_ENABLED: true
+  WORKSPACE_DIR: kernel_workspace
 
 jobs:
   build:
@@ -31,16 +31,15 @@ jobs:
           root-reserve-mb: 8192
           temp-reserve-mb: 2048
           swap-size-mb: 8192
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
+          remove-dotnet: true
+          remove-android: true
+          remove-haskell: true
+          remove-codeql: true
 
       - name: 配置环境
         run: |
           git config --global user.name "Sorynthia"
           git config --global user.email "2984886500@qq.com"
-          
           mkdir -p ${{ env.WORKSPACE_DIR }}
 
       - name: 设置依赖缓存
@@ -66,18 +65,15 @@ jobs:
       - name: 初始化版本库并同步
         working-directory: ${{ env.WORKSPACE_DIR }}
         run: |
-
           repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b oneplus/${{ env.CPU }} -m ${{ env.FEIL }}.xml --depth=1
           repo sync
-          
           find kernel_platform -name "abi_gki_protected_exports_*" -delete || echo "No protected exports found!"
-          
           for script_path in kernel_platform/common/scripts/setlocalversion kernel_platform/msm-kernel/scripts/setlocalversion kernel_platform/external/dtc/scripts/setlocalversion; do
             if [ -f "$script_path" ]; then
               sed -i 's/ -dirty//g' "$script_path"
             fi
           done
-      
+
       - name: 设置 KernelSU 分支
         id: setup_branch
         run: |
@@ -91,35 +87,26 @@ jobs:
         id: ksu_version
         working-directory: ${{ env.WORKSPACE_DIR }}/kernel_platform
         run: |
-
           curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash ${{ env.BRANCH }}
-          
           cd ./KernelSU
           KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10606)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
-          
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
 
       - name: 准备和应用补丁
         working-directory: ${{ env.WORKSPACE_DIR }}
         run: |
-          
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
-          
           cd kernel_platform
-          
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
           cp -r ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp -r ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-          
           cd ./common
           patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
-          
           cp ../../SukiSU_patch/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
-          
           cp ../../SukiSU_patch/hooks/new_hooks.patch ./
           patch -p1 -F 3 < new_hooks.patch
 
@@ -145,7 +132,6 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
-
           sed -i 's/check_defconfig//' ./common/build.config.gki
 
       - name: 添加制作名称
@@ -153,15 +139,16 @@ jobs:
         run: |
           sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
           sed -i 's|echo "\$res"|echo "'"$(echo "${{ env.KERNEL_NAME }}" | sed 's/[\&/]/\\&/g')"'"|g' ./common/scripts/setlocalversion
-           
+
       - name: 构建内核
         working-directory: ${{ env.WORKSPACE_DIR }}
         run: |
           if [[ "${{ env.CPU }}" == "sm8650" || "${{ env.CPU }}" == "sm8750" ]]; then
-            ./kernel_platform/build_with_bazel.py -t ${{ env.CPUD }} gki --action_env=KSU_VERSION 
+            ./kernel_platform/build_with_bazel.py -t ${{ env.CPUD }} gki --action_env=KSU_VERSION
           else
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ env.CPUD }} gki
           fi
+
       - name: 克隆 AnyKernel3
         run: |
           git clone https://github.com/Kernel-SU/AnyKernel3 --depth=1
@@ -231,14 +218,14 @@ jobs:
       contents: write
       packages: write
       actions: read
-      
+
     steps:
       - name: 下载 ZIP 工件
         uses: actions/download-artifact@v4
         with:
           name: Kernel_ZIP_Artifacts
           path: ./release_zips
-         
+
       - name: 创建发布
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -246,8 +233,8 @@ jobs:
           tag_name: "build-${{ github.run_id }}"
           name: "OnePlus_ACE5 Build ${{ github.run_number }}"
           body: |
-            每日自动编译 SukiSU-Ultra 内核
-            - 机型： 一加ACE5
+            ACE5 SukiSU-Ultra 内核
+            - 机型：一加ACE5
             - 特性：MKSU+SUSFS+VFS+KPM
             - 编译时间: ${{ github.event.repository.updated_at }}
             - 内核版本: ${{ needs.build.outputs.ksuver }}
