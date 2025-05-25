@@ -12,7 +12,7 @@ env:
   CPUD: 'pineapple'
   ANDROID_VERSION: 'android14'
   KERNEL_VERSION: '6.1'
-  KERNEL_NAME: '-Ace5-SukiSU-CoolApk@Xinran_official'
+  KERNEL_NAME: '-8gen3-mksu-欣然酱_official-QQ3432632982'
   KERNELSU_VARIANT: 'SukiSU-Ultra'
   KERNELSU_VERSION: 'main'
   SUSFS_ENABLED: '启用'
@@ -38,8 +38,8 @@ jobs:
 
       - name: 配置环境
         run: |
-          git config --global user.name "Sorynthia"
-          git config --global user.email "2984886500@qq.com"
+          git config --global user.name "Winkmoon"
+          git config --global user.email "3432632982@qq.com"
           
           mkdir -p ${{ env.WORKSPACE_DIR }}
 
@@ -92,7 +92,7 @@ jobs:
         working-directory: ${{ env.WORKSPACE_DIR }}/kernel_platform
         run: |
 
-          curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash ${{ env.BRANCH }}
+          curl -LSs "https://raw.github.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash ${{ env.BRANCH }}
           
           cd ./KernelSU
           KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10606)
