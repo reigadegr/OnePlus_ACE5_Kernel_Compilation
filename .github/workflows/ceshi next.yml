@@ -1,4 +1,4 @@
-name: OnePlus_ACE5_Kernel_Compilation
+name: 一加Ace5 ShirokoKerenl内核构建（Next）
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ env:
   CPUD: 'pineapple'
   ANDROID_VERSION: 'android14'
   KERNEL_VERSION: '6.1'
-  KERNEL_NAME: '-8gen3-mksu-xinran_official-QQ3432632982'
+  KERNEL_NAME: '-ShirokoNeko-Next-XinRan-Ace5_0721ciallo'
   KERNELSU_VARIANT: 'SukiSU-Ultra'
   KERNELSU_VERSION: 'main'
   SUSFS_ENABLED: '启用'
@@ -250,9 +250,6 @@ jobs:
             - 特性：ksu next+SUSFS+VFS+KPM
             - 编译时间: ${{ github.event.repository.updated_at }}
             - 内核版本: ${{ needs.build.outputs.ksuver }}
-            - 如果构建的内核版本没变，不必更新！
-            - AnyKernel3文件使用 AnyKernel3/Recovery/TWRP 刷入
-            - Image文件解压后使用 Fastboot 刷入
           draft: false
           prerelease: false
           files: |
