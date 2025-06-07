@@ -1,5 +1,9 @@
 name: OnePlus_ACE5_Kernel_Compilation
 
+on:
+  workflow_dispatch:
+  #schedule:
+    #- cron: '0 16 * * *'
 
 env:
   RETENTION_COUNT: 3  # 从7减少到3
