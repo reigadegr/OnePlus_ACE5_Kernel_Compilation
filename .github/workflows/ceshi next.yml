@@ -237,45 +237,45 @@ jobs:
             *.zip
           retention-days: 1
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-      actions: read
+  # release:
+    # needs: build
+    # runs-on: ubuntu-latest
+    # permissions:
+      # contents: write
+      # packages: write
+      # actions: read
       
-    steps:
-      - name: 下载 ZIP 工件
-        uses: actions/download-artifact@v4
-        with:
-          name: Kernel_ZIP_Artifacts
-          path: ./release_zips
+    # steps:
+      # - name: 下载 ZIP 工件
+        # uses: actions/download-artifact@v4
+        # with:
+          # name: Kernel_ZIP_Artifacts
+          # path: ./release_zips
          
-      - name: 创建发布
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: "build-${{ github.run_id }}"
-          name: "OnePlus_ACE5 Build ${{ github.run_number }}"
-          body: |
-            - 机型： 一加ACE5
-            - 特性：ksu next+SUSFS+VFS+KPM
-            - 编译时间: ${{ github.event.repository.updated_at }}
-            - 内核版本: ${{ needs.build.outputs.ksuver }}
-          draft: false
-          prerelease: false
-          files: |
-            release_zips/AnyKernel3_KernelSU_*.zip
-            release_zips/Image_KernelSU_*.zip
+      # - name: 创建发布
+        # id: create_release
+        # uses: softprops/action-gh-release@v1
+        # with:
+          # tag_name: "build-${{ github.run_id }}"
+          # name: "OnePlus_ACE5 Build ${{ github.run_number }}"
+          # body: |
+            # - 机型： 一加ACE5
+            # - 特性：ksu next+SUSFS+VFS+KPM
+            # - 编译时间: ${{ github.event.repository.updated_at }}
+            # - 内核版本: ${{ needs.build.outputs.ksuver }}
+          # draft: false
+          # prerelease: false
+          # files: |
+            # release_zips/AnyKernel3_KernelSU_*.zip
+            # release_zips/Image_KernelSU_*.zip
 
-      - name: 清理旧版本
-        uses: dev-drprasad/delete-older-releases@v0.3.4
-        continue-on-error: true
-        timeout-minutes: 5
-        with:
-          keep_latest: ${{ env.RETENTION_COUNT }}
-          delete_tags: true
-          delete_tag_pattern: 'build-*'
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      # - name: 清理旧版本
+        # uses: dev-drprasad/delete-older-releases@v0.3.4
+        # continue-on-error: true
+        # timeout-minutes: 5
+        # with:
+          # keep_latest: ${{ env.RETENTION_COUNT }}
+          # delete_tags: true
+          # delete_tag_pattern: 'build-*'
+        # env:
+          # GITHUB_TOKEN: ${{ github.token }}
